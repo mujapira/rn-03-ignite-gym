@@ -6,7 +6,8 @@ export function Input({ ...rest }: IInputProps) {
       bg="gray.700"
       h={14}
       px={4}
-      borderWidth={0}
+      borderWidth={1}
+      borderColor={'transparent'}
       fontSize="md"
       color="white"
       fontFamily="body"
