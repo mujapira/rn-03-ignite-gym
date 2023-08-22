@@ -1,3 +1,4 @@
+import { DefaultTheme } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
@@ -15,7 +16,9 @@ export type AuthNavigatorRoutesProps = NativeStackNavigationProp<AuthRoutes>;
 const { Navigator, Screen } = createNativeStackNavigator<AuthRoutes>();
 
 export function AuthRoutes() {
+
   return (
+    
     <Navigator screenOptions={{ headerShown: false }}>
       <Screen name="signIn" component={SignIn} />
 
