@@ -14,6 +14,10 @@ export function Home() {
     "Remada curvada",
     "Remada unilateral",
     "Levantamento terra",
+    "Rosca direta",
+    "Rosca alternada",
+    "Rosca martelo",
+    "Tríceps testa",
   ]);
   const [groupSelected, setGroupSelected] = useState("Costas");
 
@@ -28,7 +32,6 @@ export function Home() {
       <HomeHeader />
 
       <FlatList
-        flex={1}
         data={groups}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
@@ -45,6 +48,7 @@ export function Home() {
         }}
         my={10}
         maxH={10}
+        minH={10}
       />
 
       <VStack px={8} flex={1}>
