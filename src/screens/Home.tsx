@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { FlatList, Heading, HStack, Icon, Text, VStack } from "native-base";
+import { FlatList, Heading, HStack, Text, VStack } from "native-base";
 
 import { Group } from "@components/Group";
 import { HomeHeader } from "@components/HomeHeader";
 import { ExerciseCard } from "@components/ExerciseCard";
-import { UserPhoto } from "@components/UserPhoto";
-import { TouchableOpacity } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 
 export function Home() {
   const [groups, setGroups] = useState(["Costas", "Bíceps", "Tríceps", "ombro"]);
