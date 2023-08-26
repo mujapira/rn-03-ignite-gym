@@ -6,20 +6,16 @@ import { AppRoutes } from "./app.routes";
 import { useAuth } from "@hooks/useAuth";
 
 export function Routes() {
-  
   const { colors } = useTheme();
   const theme = DefaultTheme;
   theme.colors.background = colors.gray[700];
-  const isAuth = true;
 
   const { user } = useAuth();
-
-  console.log("USUÁRIO LOGADO =>", user);
 
   return (
     <Box flex={1} bg="gray.700">
       <NavigationContainer theme={theme}>
-        {isAuth ? <AuthRoutes /> : <AppRoutes />}
+        {user.id ? <AppRoutes /> : <AuthRoutes />}
       </NavigationContainer>
     </Box>
   );
