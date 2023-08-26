@@ -9,8 +9,6 @@ import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from 'axios';
-import { Alert } from "react-native";
 import { AppError } from "@utils/AppError";
 
 type FormDataProps = {
@@ -53,7 +51,6 @@ export function SignUp() {
       console.log(response.data);
     } catch (error) {
       const isAppError = error instanceof AppError;
-
       const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde';
 
       toast.show({
