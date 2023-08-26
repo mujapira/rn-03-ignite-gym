@@ -5,15 +5,28 @@ import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
+import { Controller, useForm } from "react-hook-form";
+
+type FormData = {
+  email: string;
+  password: string;
+};
 
 export function SignIn() {
-
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
 
   function handleNewAccount() {
-    navigation.navigate('signUp');
+    navigation.navigate("signUp");
   }
 
+  function handleSignIn({ email, password }: FormData) {
+    console.log(email, password);
+  }
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
@@ -35,14 +48,40 @@ export function SignIn() {
         </Center>
 
         <Center>
-          <Heading color="gray.100" fontSize="xl" mb={6} fontFamily="heading" >
+          <Heading color="gray.100" fontSize="xl" mb={6} fontFamily="heading">
             Acesse a conta
           </Heading>
 
-          <Input placeholder="E-mail" keyboardType="email-address" autoCapitalize="none" />
-          <Input placeholder="Senha" secureTextEntry />
+          <Controller
+            control={control}
+            name="email"
+            rules={{ required: "Informe o e-mail" }}
+            render={({ field: { onChange } }) => (
+              <Input
+                placeholder="E-mail"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                onChangeText={onChange}
+                errorMessage={errors.email?.message}
+              />
+            )}
+          />
 
-          <Button title="Acessar" />
+          <Controller
+            control={control}
+            name="password"
+            rules={{ required: "Informe a senha" }}
+            render={({ field: { onChange } }) => (
+              <Input
+                placeholder="Senha"
+                secureTextEntry
+                onChangeText={onChange}
+                errorMessage={errors.password?.message}
+              />
+            )}
+          />
+
+          <Button title="Acessar" onPress={handleSubmit(handleSignIn)} />
         </Center>
 
         <Center mt={24}>
@@ -51,7 +90,7 @@ export function SignIn() {
           </Text>
         </Center>
 
-        <Button title="Criar Conta" variant="outline" onPress={handleNewAccount}/>
+        <Button title="Criar Conta" variant="outline" onPress={handleNewAccount} />
       </VStack>
     </ScrollView>
   );
