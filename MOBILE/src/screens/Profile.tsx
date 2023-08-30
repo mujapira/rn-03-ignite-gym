@@ -14,6 +14,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
+import defaulUserPhotoImg from '@assets/userPhotoDefault.png'; 
 
 type FormDataProps = {
   name: string;
@@ -48,7 +49,6 @@ const profileSchema = yup.object({
 export function Profile() {
   const PHOTO_SIZE = 33;
   const [isUpdating, setIsUpdating] = useState(false);
-  const [userPhoto, setUserPhoto] = useState("https://github.com/mujapira.png");
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
   const toast = useToast();
   const { user, updateUserProfile } = useAuth();
@@ -118,7 +118,36 @@ export function Profile() {
             bgColor: "red.500",
           });
         }
-        setUserPhoto(photoSelected.assets[0].uri);
+
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase(),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        const userPhotoUploadForm = new FormData();
+
+        userPhotoUploadForm.append("avatar", photoFile);
+
+        const avatarUpdatedResponse = await api.patch("/users/avatar", userPhotoUploadForm, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        const userUpdated = user;
+
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar;
+
+        await updateUserProfile(userUpdated);
+
+        toast.show({
+          title: "Foto atualizada!",
+          placement: "top",
+          bgColor: "green.500",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -142,7 +171,14 @@ export function Profile() {
               endColor="gray.400"
             />
           ) : (
-            <UserPhoto source={{ uri: userPhoto }} alt="Foto do usuário" size={PHOTO_SIZE} />
+            
+            <UserPhoto 
+            source={
+              user.avatar  
+              ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` } 
+              : defaulUserPhotoImg
+            }
+            alt="Foto do usuário" size={PHOTO_SIZE} />
           )}
 
           <TouchableOpacity onPress={handleUserPhotoSelected}>
