@@ -11,6 +11,7 @@ export type AuthContextDataProps = {
   singIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isUserStorageLoading: boolean;
+  updateUserProfile: (userUpdated: UserDTO) => Promise<void>;
 };
 
 type AuthContextProviderProps = {
@@ -27,6 +28,15 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
     setUser(userData);
+  }
+
+  async function updateUserProfile(userUpdated: UserDTO) {
+    try {
+      setUser(userUpdated);
+      await saveUserOnStorage(userUpdated);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async function storageUserAndTokenSave(userData: UserDTO, token: string) {
@@ -96,6 +106,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         singIn,
         signOut,
         isUserStorageLoading,
+        updateUserProfile
       }}
     >
       {children}

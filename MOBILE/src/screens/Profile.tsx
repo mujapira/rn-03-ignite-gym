@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TouchableOpacity, Alert } from "react-native";
-import { Center, ScrollView, VStack, Skeleton, Text, Heading, Toast } from "native-base";
+import { Center, ScrollView, VStack, Skeleton, Text, Heading, Toast, useToast } from "native-base";
 
 import { ScreenHeader } from "@components/ScreenHeader";
 import { UserPhoto } from "@components/UserPhoto";
@@ -12,6 +12,8 @@ import { useAuth } from "@hooks/useAuth";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
 
 type FormDataProps = {
   name: string;
@@ -23,15 +25,33 @@ type FormDataProps = {
 
 const profileSchema = yup.object({
   name: yup.string().required("Informe o nome"),
+  password: yup
+    .string()
+    .min(6, "A senha deve ter pelo menos 6 dígitos.")
+    .nullable()
+    .transform((value) => (!!value ? value : null)),
+  confirm_password: yup
+    .string()
+    .nullable()
+    .transform((value) => (!!value ? value : null))
+    .oneOf([yup.ref("password"), null], "A confirmação de senha não confere.")
+    .when("password", {
+      is: (Field: any) => Field,
+      then: (schema) =>
+        schema
+          .nullable()
+          .required("Informe a confirmação da senha")
+          .transform((value) => (!!value ? value : null)),
+    }),
 });
 
 export function Profile() {
   const PHOTO_SIZE = 33;
+  const [isUpdating, setIsUpdating] = useState(false);
   const [userPhoto, setUserPhoto] = useState("https://github.com/mujapira.png");
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
-
-  const { user } = useAuth();
-
+  const toast = useToast();
+  const { user, updateUserProfile } = useAuth();
   const {
     control,
     handleSubmit,
@@ -41,10 +61,37 @@ export function Profile() {
       name: user.name,
       email: user.email,
     },
-    resolver: yupResolver(profileSchema),
+    resolver: yupResolver<any>(profileSchema),
   });
+
   async function handleUpdateProfile(data: FormDataProps) {
-    console.log(data);
+    try {
+      setIsUpdating(true);
+      const userUpdated = user;
+      userUpdated.name = data.name;
+
+      await api.put("/users", data);
+      await updateUserProfile(userUpdated);
+
+      toast.show({
+        title: "Perfil atualizado com sucesso!",
+        placement: "top",
+        bgColor: "green.500",
+      });
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível atualizar os dados. Tente novamente mais tarde.";
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   }
 
   async function handleUserPhotoSelected() {
@@ -108,7 +155,13 @@ export function Profile() {
             control={control}
             name="name"
             render={({ field: { value, onChange } }) => (
-              <Input bg="gray.600" placeholder="Nome" onChangeText={onChange} value={value} errorMessage={errors.name?.message} />
+              <Input
+                bg="gray.600"
+                placeholder="Nome"
+                onChangeText={onChange}
+                value={value}
+                errorMessage={errors.name?.message}
+              />
             )}
           />
 
@@ -178,7 +231,12 @@ export function Profile() {
             )}
           />
 
-          <Button title="Atualizar" mt={4} onPress={handleSubmit(handleUpdateProfile)} />
+          <Button
+            title="Atualizar"
+            mt={4}
+            onPress={handleSubmit(handleUpdateProfile)}
+            isLoading={isUpdating}
+          />
         </Center>
       </ScrollView>
     </VStack>
